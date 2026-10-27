@@ -1,0 +1,665 @@
+{
+  "info": {
+    "_postman_id": "a918f0c2-55d6-4e67-9c60-wallet-service-assignment",
+    "name": "Wallet Service & Ledger API",
+    "description": "Comprehensive Postman collection for testing all User and Admin APIs of the Wallet Service, including double-entry append-only ledger, atomic transfers, withdrawal flows, and transfer reversals.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5018",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recipientUsername",
+      "value": "rahul_jha",
+      "type": "string"
+    },
+    {
+      "key": "withdrawalId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transferId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transactionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Auth & Users",
+      "item": [
+        {
+          "name": "1. Register Arpit Sharma (User)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Arpit Sharma\",\n  \"username\": \"arpit_sharma\",\n  \"email\": \"arpit@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"+919876543210\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "register"]
+            },
+            "description": "Register primary user Arpit Sharma with role 'user'."
+          }
+        },
+        {
+          "name": "2. Register Rahul Jha (Recipient 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rahul Jha\",\n  \"username\": \"rahul_jha\",\n  \"email\": \"rahul@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"+919876543211\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "register"]
+            },
+            "description": "Register second user Rahul Jha to test transfers."
+          }
+        },
+        {
+          "name": "3. Register Aditya Vishwakarma (Recipient 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aditya Vishwakarma\",\n  \"username\": \"aditya_vishwakarma\",\n  \"email\": \"aditya@example.com\",\n  \"password\": \"password123\",\n  \"phone\": \"+919876543212\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "register"]
+            },
+            "description": "Register third user Aditya Vishwakarma to test multi-party transfers."
+          }
+        },
+        {
+          "name": "4. Register Aman Sharma (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aman Sharma\",\n  \"username\": \"aman_sharma\",\n  \"email\": \"aman.admin@example.com\",\n  \"password\": \"adminPassword123\",\n  \"phone\": \"+919876543213\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "register"]
+            },
+            "description": "Register administrator account Aman Sharma with role 'admin'."
+          }
+        },
+        {
+          "name": "5. Login as Arpit Sharma (Auto-saves userToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.token) {",
+                  "        pm.collectionVariables.set('userToken', json.data.token);",
+                  "        pm.collectionVariables.set('userId', json.data.user._id);",
+                  "        console.log('userToken saved:', json.data.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"arpit_sharma\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "login"]
+            },
+            "description": "Login as Arpit Sharma. Test script automatically captures userToken into collection variable."
+          }
+        },
+        {
+          "name": "6. Login as Aman Sharma (Admin) (Auto-saves adminToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.token) {",
+                  "        pm.collectionVariables.set('adminToken', json.data.token);",
+                  "        console.log('adminToken saved:', json.data.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aman.admin@example.com\",\n  \"password\": \"adminPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "login"]
+            },
+            "description": "Login as Aman Sharma (Admin). Test script automatically captures adminToken into collection variable."
+          }
+        },
+        {
+          "name": "7. Get Current User Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "me"]
+            },
+            "description": "Fetch current authenticated user profile."
+          }
+        },
+        {
+          "name": "8. Get All Users (Paginated via CommonService)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "List users using CommonService pagination."
+          }
+        },
+        {
+          "name": "9. Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Arpit Sharma (Updated)\",\n  \"phone\": \"+919876543999\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "{{userId}}"]
+            },
+            "description": "Update user name or phone. Note that updating role is strictly blocked."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. User Wallet Operations",
+      "item": [
+        {
+          "name": "1. View Wallet Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "balance"]
+            },
+            "description": "Returns wallet, lockedBalance, and availableBalance in whole paise and formatted INR."
+          }
+        },
+        {
+          "name": "2. Deposit Money (Simulated ₹1,000 / 100,000 paise)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.transaction) {",
+                  "        pm.collectionVariables.set('transactionId', json.data.transaction._id);",
+                  "        console.log('transactionId saved:', json.data.transaction._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-idempotency-key",
+                "value": "dep-arpit-{{$timestamp}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100000,\n  \"paymentReference\": \"SIM-TXN-1001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/deposit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "deposit"]
+            },
+            "description": "Deposit ₹1,000 (100,000 paise). Appends balanced zero-sum ledger entries (User +100,000, Clearing -100,000)."
+          }
+        },
+        {
+          "name": "3. Transfer Money to Rahul Jha (₹100 + ₹1 fee)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.transaction) {",
+                  "        pm.collectionVariables.set('transferId', json.data.transaction._id);",
+                  "        console.log('transferId saved:', json.data.transaction._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-idempotency-key",
+                "value": "transfer-arpit-rahul-{{$timestamp}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient\": \"rahul_jha\",\n  \"amount\": 10000,\n  \"description\": \"Payment to Rahul for project review\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "transfer"]
+            },
+            "description": "Transfer ₹100 (10,000 paise) to Rahul Jha. Sender pays 1% fee (₹1 = 100 paise). Total debited = ₹101 (10,100 paise). Recipient credited = ₹100 (10,000 paise). Platform fee = ₹1 (100 paise). Balanced ledger: -10,100 + 10,000 + 100 = 0."
+          }
+        },
+        {
+          "name": "4. Transfer Money to Aditya Vishwakarma (₹250 + ₹2.50 fee)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-idempotency-key",
+                "value": "transfer-arpit-aditya-{{$timestamp}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient\": \"aditya_vishwakarma\",\n  \"amount\": 25000,\n  \"description\": \"Payment to Aditya for design assets\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "transfer"]
+            },
+            "description": "Transfer ₹250 (25,000 paise) to Aditya Vishwakarma. 1% fee is ₹2.50 (250 paise). Total debited = ₹252.50 (25,250 paise)."
+          }
+        },
+        {
+          "name": "5. Request Withdrawal (₹200 / 20,000 paise)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.transaction) {",
+                  "        pm.collectionVariables.set('withdrawalId', json.data.transaction._id);",
+                  "        console.log('withdrawalId saved:', json.data.transaction._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-idempotency-key",
+                "value": "wth-arpit-{{$timestamp}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 20000,\n  \"bankDetails\": {\n    \"accountNumber\": \"123456789012\",\n    \"ifscCode\": \"HDFC0001234\",\n    \"accountHolderName\": \"Arpit Sharma\",\n    \"bankName\": \"HDFC Bank\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "withdraw"]
+            },
+            "description": "Request withdrawal of ₹200 (20,000 paise). Moves funds to lockedBalance, preventing them from being spent on other transactions."
+          }
+        },
+        {
+          "name": "6. View My Transaction History (Paginated via CommonService)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/transactions?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "transactions"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Paginated transaction history for the authenticated user."
+          }
+        },
+        {
+          "name": "7. View Specific Transaction Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/transactions/{{transferId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "transactions", "{{transferId}}"]
+            },
+            "description": "View details of a specific transaction by ID (owner or admin only)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Admin Wallet & Governance",
+      "item": [
+        {
+          "name": "1. View Pending Withdrawals (Paginated via CommonService)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/admin/pending-withdrawals?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "admin", "pending-withdrawals"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Admin endpoint: View all pending withdrawal requests."
+          }
+        },
+        {
+          "name": "2. Approve Withdrawal Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/admin/withdrawals/{{withdrawalId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "admin", "withdrawals", "{{withdrawalId}}", "approve"]
+            },
+            "description": "Admin endpoint: Approves withdrawal, deducts user wallet and lockedBalance, and records bank payout ledger."
+          }
+        },
+        {
+          "name": "3. Reject Withdrawal Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Bank account number and IFSC code mismatch\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/admin/withdrawals/{{withdrawalId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "admin", "withdrawals", "{{withdrawalId}}", "reject"]
+            },
+            "description": "Admin endpoint: Rejects withdrawal and releases locked funds back to user's available balance."
+          }
+        },
+        {
+          "name": "4. Reverse Completed Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Disputed transaction: accidental duplicate payment to Rahul\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/admin/transfers/{{transferId}}/reverse",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "admin", "transfers", "{{transferId}}", "reverse"]
+            },
+            "description": "Admin endpoint: Atomically claws back recipient funds, refunds sender (amount + fee), creates linked REVERSAL transaction, and appends zero-sum compensating ledger entries."
+          }
+        },
+        {
+          "name": "5. View All Transactions (System-wide, Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/admin/transactions?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "admin", "transactions"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "Admin endpoint: View all transactions across all users with CommonService pagination."
+          }
+        },
+        {
+          "name": "6. View Append-Only Audit Ledger (Zero-Sum Balanced)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/wallet/admin/ledger?page=1&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallet", "admin", "ledger"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "50" }
+              ]
+            },
+            "description": "Admin endpoint: View the immutable, append-only double-entry ledger entries with signed amounts (Debits and Credits balancing to zero)."
+          }
+        }
+      ]
+    }
+  ]
+}
