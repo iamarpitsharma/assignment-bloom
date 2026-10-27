@@ -56,6 +56,12 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
+
+// Health check route for uptime monitoring
+app.get("/health", (_req, res) => {
+  return res.status(200).json({ status: "OK", message: "Server is healthy" });
+});
+
 // Handle Public API Routes
 app.use("/api", routes);
 
